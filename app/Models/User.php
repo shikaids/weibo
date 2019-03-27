@@ -36,4 +36,19 @@ class User extends Authenticatable
     protected $casts = [
         'email_verified_at' => 'datetime',
     ];
+
+    /**
+     * Gratatar头像
+     * @param  string $value 默认尺寸值100
+     * @return string        头像链接
+     *
+     * $this->attributes是模型属性的数组。
+     * 逻辑应该是读取users数据表的记录赋值给$this->attributes数组，然后通过读取数组记录来获取user属性值。
+     * 那么$this->attributes是在哪里实现的？
+     */
+    public function gravatar($size = '100')
+    {
+        $hash = md5(strtolower(trim($this->attributes['email'])));
+        return "http://www.gravatar.com/avatar/$hash?s=$size";
+    }
 }
