@@ -28,11 +28,22 @@ class UsersController extends Controller
     // 7、confirmed  密码匹配验证
     public function store(Request $request)
     {
+        //数据验证。当发生错误，$errors可以在视图调用
         $this->validate($request, [
             'name' => 'required|min:3|max:50',
             'email' => 'required|email|unique:users|max:255',
             'password' => 'required|confirmed|min:6'
         ]);
-        return;
+
+        //
+        $user = User::create([
+            'name' => $request->name,
+            'email' => $request->email,
+            'password' => bcrypt($request->password),
+        ]);
+
+        //
+        session()->flash('success', '欢迎，您将在这里开启一段新的旅程');
+        return redirect()->route('users.show', [$user]);
     }
 }
