@@ -1,5 +1,7 @@
 <?php
 
+$db_config = get_db_config();
+
 return [
 
     /*
@@ -13,7 +15,8 @@ return [
     |
     */
 
-    'default' => env('DB_CONNECTION', 'mysql'),
+    //'default' => env('DB_CONNECTION', 'mysql'),
+    'default' => $db_config['connection'],
 
     /*
     |--------------------------------------------------------------------------
@@ -56,7 +59,7 @@ return [
             'engine' => null,
         ],
 
-        'pgsql' => [
+        /*'pgsql' => [
             'driver' => 'pgsql',
             'host' => env('DB_HOST', '127.0.0.1'),
             'port' => env('DB_PORT', '5432'),
@@ -68,6 +71,19 @@ return [
             'prefix_indexes' => true,
             'schema' => 'public',
             'sslmode' => 'prefer',
+        ],
+*/
+        'pgsql' => [
+            'driver'   => 'pgsql',
+            'host'     => $db_config['host'],
+            'port'     => env('DB_PORT', '5432'),
+            'database' => $db_config['database'],
+            'username' => $db_config['username'],
+            'password' => $db_config['password'],
+            'charset'  => 'utf8',
+            'prefix'   => '',
+            'schema'   => 'public',
+            'sslmode'  => 'prefer',
         ],
 
         'sqlsrv' => [
