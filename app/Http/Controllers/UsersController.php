@@ -28,22 +28,28 @@ class UsersController extends Controller
     // 7、confirmed  密码匹配验证
     public function store(Request $request)
     {
-        //数据验证。当发生错误，$errors可以在视图调用
+        // 数据验证。当发生错误产生错误消息$errors变量存储在session中，$errors可以在视图调用。
+        // 并且，如果验证后产生数据错误，页面依然跳转回到users.create路由页面。
+        // 因为validate()验证到错误，会返回到填充提交的旧页面。
         $this->validate($request, [
             'name' => 'required|min:3|max:50',
             'email' => 'required|email|unique:users|max:255',
             'password' => 'required|confirmed|min:6'
         ]);
 
-        //
+        // User::create()方法创建成功后并返回一个用户对象，并包含新注册用户的所有信息。
         $user = User::create([
             'name' => $request->name,
             'email' => $request->email,
             'password' => bcrypt($request->password),
         ]);
 
-        //
+        // 建立success键的内容，通过session()->get('success')获取
         session()->flash('success', '欢迎，您将在这里开启一段新的旅程');
+
+        // 注册成功跳转页面，users.show用户展示页面。
+        // 通过redirect()->route()的路由函数绑定内容到视图。那么，redirect()->route()方法就有两个作用。
+        // 1. 建立跳转路由；2. 把数据绑定到用户展示视图。
         return redirect()->route('users.show', [$user]);
     }
 }
