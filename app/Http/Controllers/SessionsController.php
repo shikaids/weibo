@@ -33,7 +33,8 @@ class SessionsController extends Controller
         // 上面两个方面都是SessionGuard的方法
         // Illuminate\Auth\SessionGuard::attempt()
         // Illuminate\Auth\SessionGuard::user()
-        if (Auth::attempt($credentials)) {
+        // $request->has('remember') 是响应name为remember的input的form
+        if (Auth::attempt($credentials, $request->has('remember'))) {
             // 登录成功后的相关操作
             session()->flash('success', '欢迎回来');
             return redirect()->route('users.show', [Auth::user()]);
