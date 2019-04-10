@@ -44,6 +44,9 @@ class UsersController extends Controller
             'password' => bcrypt($request->password),
         ]);
 
+        // 用户注册后自动登录
+        Auth::login($user);
+
         // 建立success键的内容，通过session()->get('success')获取
         session()->flash('success', '欢迎，您将在这里开启一段新的旅程');
 
