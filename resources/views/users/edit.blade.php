@@ -8,6 +8,7 @@
         <h5>更新个人资料</h5>
       </div>
       <div class="card-body">
+
         @include('shared._errors')
 
         <div class="gravatar_edit">

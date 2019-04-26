@@ -7,6 +7,15 @@ use App\Models\User;
 
 class UsersController extends Controller
 {
+    public function __construct()
+    {
+        // $this->middleware()方法是使用中间件
+        // 如果在中间件系统中写中间件，是否就是使用middleware来使用中间件
+        $this->middleware('auth', [
+            'except' => ['show', 'create', 'store']
+        ]);
+    }
+
     public function create()
     {
         return view('users.create');
@@ -58,11 +67,13 @@ class UsersController extends Controller
 
     public function edit(User $user)
     {
+        $this->authorize('update', $user);
         return view('users.edit', compact('user'));
     }
 
     public function update(User $user, Request $request)
     {
+        $this->authorize('update', $user);
         $this->validate($request, [
             'name' => 'required|max:50',
             'password' => 'nullable|confirmed|min:6'
@@ -73,6 +84,8 @@ class UsersController extends Controller
         if ($request->password) {
             $data['password'] = bcrypt($request->password);
         }
+
+        //这个update方法在哪里定义？
         $user->update($data);
 
         session()->flash('success', '个人资料更新成功');
