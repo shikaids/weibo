@@ -127,4 +127,17 @@ class UsersController extends Controller
 
         return redirect()->route('users.show', $user->id);
     }
+
+    // 首先会根据路由发送过来的用户 id 进行数据查找
+    // 查找到指定用户之后再调用 Eloquent 模型提供的 delete 方法对用户资源进行删除，
+    // 成功删除后在页面顶部进行消息提示。
+    // 最后将用户重定向到上一次进行删除操作的页面，即用户列表页。
+    public function destroy(User $user)
+    {
+        // authorize 方法来对删除操作进行授权验证
+        $this->authorize('destroy', $user);
+        $user->delete();
+        session()->flash('success', '成功删除用户');
+        reeturn back();
+    }
 }
