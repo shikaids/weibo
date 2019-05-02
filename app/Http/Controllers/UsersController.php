@@ -11,9 +11,44 @@ class UsersController extends Controller
     {
         // $this->middleware()方法是使用中间件
         // 如果在中间件系统中写中间件，是否就是使用middleware来使用中间件
+        // index 是允许游客访问
         $this->middleware('auth', [
-            'except' => ['show', 'create', 'store']
+            'except' => ['show', 'create', 'store', 'index']
         ]);
+    }
+
+    public function index()
+    {
+        // User::all 获取用户模型的全部记录
+        // compact函数建立一个数组，包括变量名和它们的值
+        //
+        // index 方法中，我们使用 Eloquent
+        // 用户模型将所有用户的数据一下子完全取出来了，
+        // 这么做会影响应用的性能，后面我们再来对该代码进行优化，通过分页的方式来读取用户数据。
+        //
+        // 在将用户数据取出之后，与 index 视图进行绑定，这样便可以在视图中使用 $users 来访问所有用户实例
+        //$users = User::all();
+        //
+        //
+        /**
+         * 默认状况下，页面的当前页数由 HTTP 请求所带的 page 参数决定，
+         * 当你访问 http://weibo.test/users?page=2链接时，
+         * 获取的是第二页的用户列表信息，
+         * Laravel 会自动检测到 page 的值并插入由分页器生成的链接中。
+         */
+        // paginate方法指定每页生成的数据数量为 10 条，即当我们有 50 个用户时，用户列表将被分为五页进行展示
+        $users = User::paginate(10);
+        /**
+         * paginate方法与render方法一般是配合使用。
+         * 调用 paginate 方法获取用户列表之后，然后通过 {!! $users->render() !!} 在用户列表页上渲染分页链接。
+         * {!! $users->render() !!} 是用在视图模板的。
+         *
+         * 由 render 方法生成的 HTML 代码默认会使用 Bootstrap 框架的样式，
+         * 渲染出来的视图链接也都统一会带上 ?page 参数来设置指定页数的链接。
+         * 另外还需要注意的一点是，渲染分页视图的代码必须使用 {!! !!} 语法，
+         * 而不是 {{　}}，这样生成 HTML 链接才不会被转义。
+         */
+        return view('users.index', compact('users'));
     }
 
     public function create()
