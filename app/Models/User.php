@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Foundation\Auth\User as Authenticatable;
+use Illuminate\Support\Str;
 
 class User extends Authenticatable
 {
@@ -36,6 +37,25 @@ class User extends Authenticatable
     protected $casts = [
         'email_verified_at' => 'datetime',
     ];
+
+    /**
+     * 生成用户激活令牌
+     *
+     * boot 方法会在用户模型类完成初始化之后进行加载，因此我们对事件的监听需要放在该方法中。
+     * parent::boot() 继承父类的boot方法。
+     * creating 事件
+     *
+     * 功能：用户的激活令牌需要在用户创建（注册）之前就先生成好，
+     * 这样当用户注册成功之后我们才可以将令牌附带到注册链接上，并通过邮件的形式发送给用户。
+     */
+    public static function boot()
+    {
+        parent::boot();
+
+        static::creating(function ($user) {
+            $user->activation_token = Str::random(10);
+        });
+    }
 
     /**
      * Gratatar头像

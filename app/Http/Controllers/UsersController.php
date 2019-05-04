@@ -4,6 +4,8 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\User;
+use Auth;
+use Mail;
 
 class UsersController extends Controller
 {
@@ -13,7 +15,7 @@ class UsersController extends Controller
         // 如果在中间件系统中写中间件，是否就是使用middleware来使用中间件
         // index 是允许游客访问
         $this->middleware('auth', [
-            'except' => ['show', 'create', 'store', 'index']
+            'except' => ['show', 'create', 'store', 'index', 'confirmEmail']
         ]);
     }
 
@@ -51,7 +53,8 @@ class UsersController extends Controller
         return view('users.index', compact('users'));
     }
 
-    public function create()
+    public function crea
+    te()
     {
         return view('users.create');
     }
@@ -82,22 +85,33 @@ class UsersController extends Controller
         ]);
 
         // User::create()方法创建成功后并返回一个用户对象，并包含新注册用户的所有信息。
+        // User::create()方法的源代码在哪里？
         $user = User::create([
             'name' => $request->name,
             'email' => $request->email,
             'password' => bcrypt($request->password),
         ]);
 
+        /**
+         * 没有邮件验证功能的代码
+         */
         // 用户注册后自动登录
-        Auth::login($user);
+        //Auth::login($user);
 
         // 建立success键的内容，通过session()->get('success')获取
-        session()->flash('success', '欢迎，您将在这里开启一段新的旅程');
+        //session()->flash('success', '欢迎，您将在这里开启一段新的旅程');
 
         // 注册成功跳转页面，users.show用户展示页面。
         // 通过redirect()->route()的路由函数绑定内容到视图。那么，redirect()->route()方法就有两个作用。
         // 1. 建立跳转路由；2. 把数据绑定到用户展示视图。
-        return redirect()->route('users.show', [$user]);
+        //return redirect()->route('users.show', [$user]);
+
+        /**
+         * 邮件验证功能的代码
+         */
+        $this->sendEmailConfirmationTo($user);
+        session()->flash('success', '验证邮件已发送到你的注册邮箱上，请注意查收。');
+        return redirect('/');
     }
 
     public function edit(User $user)
@@ -138,6 +152,33 @@ class UsersController extends Controller
         $this->authorize('destroy', $user);
         $user->delete();
         session()->flash('success', '成功删除用户');
-        reeturn back();
+        return back();
+    }
+
+    public function confirmEmail($token) {
+        $user = User::where('activation_token', $token)->firstOrFail();
+
+        $user->activated = true;
+        $user->activation_token = null;
+        $user->save();
+
+        Auth::login($user);
+        session()->flash('success', '恭喜你，激活成功');
+        //为什么使用数组？[$user]
+        return redirect()->route('users.show', [$user]);
+    }
+
+    protected function sendEmailConfirmationTo($user)
+    {
+        $view = 'emails.confirm';
+        $data = compact('user');
+        $from = 'summer@example.com';
+        $name = 'summer';
+        $to   = $user->email;
+        $subject = "感谢注册 Weibo 应用！ 请确认你的邮箱";
+
+        Mail::send($view, $data, function ($message) use ($from, $name, $to, $subject) {
+            $message->from($from, $name)->to($to)->subject($subject);
+        });
     }
 }
