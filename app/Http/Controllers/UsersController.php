@@ -53,8 +53,7 @@ class UsersController extends Controller
         return view('users.index', compact('users'));
     }
 
-    public function crea
-    te()
+    public function create()
     {
         return view('users.create');
     }
