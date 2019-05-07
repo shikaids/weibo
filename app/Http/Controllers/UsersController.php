@@ -61,7 +61,11 @@ class UsersController extends Controller
     // compace 建立一个数字，包括变量名和它们的值
     public function show(User $user)
     {
-        return view('users.show', compact('user'));
+        //return view('users.show', compact('user'));
+        $statuses = $user->statuses()
+                         ->orderBy('created_at', 'desc')
+                         ->paginate(10);
+        return view('users.show', compact('user', 'statuses'));
     }
 
     // 1. validator 由 App\Http\Controllers\Controller类中的ValidatesRequests进行定义，
