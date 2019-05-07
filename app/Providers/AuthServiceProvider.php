@@ -14,7 +14,10 @@ class AuthServiceProvider extends ServiceProvider
      */
     protected $policies = [
         'App\Model' => 'App\Policies\ModelPolicy',
-        \App\Models\User::class => \App\Policies\UserPlicy::class,
+        \App\Models\User::class => \App\Policies\UserPolicy::class,
+        // 在教程里没有添加这一行代码文案，应该要写这一样。
+        // 文案中「授权策略自动注册」 这个功能没有见过
+        \App\Models\Status::class => \App\Policies\StatusPolicy::class
     ];
 
     /**
