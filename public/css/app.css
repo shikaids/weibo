@@ -10660,6 +10660,10 @@ body {
   font-weight: normal;
 }
 
+.container {
+  padding-top: 60px;
+}
+
 nav.navbar.navbay-expand-lg {
   margin-bottom: 20px;
 }
