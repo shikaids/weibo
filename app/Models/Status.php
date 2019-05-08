@@ -18,6 +18,11 @@ class Status extends Model
      * 还是系统会判断s结尾，所以是使用Statuses命名的表
      */
 
+    // fillable属性，指定在微博模型中可以进行正常更新的字段
+    // 如果没有指定，微博提交后无法写入数据表
+    // 因为Laravel在保护模型与数据。
+    protected $fillable = ['content'];
+
     // 指明一条微博属于一个用户
     public function user()
     {

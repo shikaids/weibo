@@ -62,6 +62,8 @@ class UsersController extends Controller
     public function show(User $user)
     {
         //return view('users.show', compact('user'));
+        // 在用户模型内以注入的方式调用Status模型类获取相应用户的微博列表
+        // 在
         $statuses = $user->statuses()
                          ->orderBy('created_at', 'desc')
                          ->paginate(10);
