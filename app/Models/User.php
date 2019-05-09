@@ -91,7 +91,21 @@ class User extends Authenticatable
      */
     public function feed()
     {
-        return $this->statuses()->orderBy('created_at', 'desc');
+        // 这是简单返回当前用户所发布的微博
+        //return $this->statuses()->orderBy('created_at', 'desc');
+
+        // 显示所有关注用户的、自己的微博
+        //
+        // 获取关注用户的数据
+        //
+        // 通过 followings 方法取出所有关注用户的信息，再借助 pluck 方法将 id 进行分离并赋值给 user_ids
+        $user_ids = $this->followings->pluck('id')->toArray();
+        // 将当前用户的 id 加入到 user_ids 数组中
+        array_push($user_ids, $this->id);
+        // 使用 Laravel 提供的 查询构造器 whereIn 方法取出所有用户的微博动态并进行倒序排序。
+        //  Eloquent 关联的 预加载 with 方法，预加载避免了 N+1 查找的问题，
+        //  大大提高了查询效率。N+1 问题 的例子可以阅读此文档 Eloquent 模型关系预加载。
+        return Status::whereIn('user_id', $user_ids)->with('user')->orderBy('created_at', 'desc');
     }
 
 
@@ -132,7 +146,8 @@ class User extends Authenticatable
     /**
      * 一个用户关注多个人。获取用户关注人的列表。
      *
-     *
+     * 建立关联，获取所有关注人列表，返回一个关注人列表的数据库构建起，
+     * 可以通过get(), paginate()等方法获取数据
      */
     public function followings()
     {
@@ -158,7 +173,7 @@ class User extends Authenticatable
     public function follow($user_ids)
     {
         if (!is_array($user_ids)) {
-            $user_ids = compact('user_ids')
+            $user_ids = compact('user_ids');
         }
         $this->followings()->sync($user_ids, false);
     }
@@ -166,7 +181,7 @@ class User extends Authenticatable
     public function unfollow($user_ids)
     {
         if (!is_array($user_ids)) {
-            $user_ids = compact('user_ids')
+            $user_ids = compact('user_ids');
         }
         $this->followings()->detach($user_ids);
     }
@@ -175,9 +190,41 @@ class User extends Authenticatable
      * 我们还需要一个方法用于判断当前登录的用户 A 是否关注了用户 B，
      * 代码实现逻辑很简单，我们只需判断用户 B 是否包含在用户 A 的关注人列表上即可。
      *
+     * $this->followings是Laravel中动态属性的应用。
+     * 这是动态属性最简单的应用。
+     *
+     * $this->followings的写法实质就是调用类的属性。
+     * 但是在User类中没有followings属性，也就是调用的属性不存在，
+     * 但存在同名的方法时，则会调用同名的方法，返回的类型是collection类型（Eloquent的集合）。
+     *
+     * 而$this->followings()一个Relations，也就是数据库请求构建器，所以可以使用：
+     * $this->followings()->get()来获取数据集合。
+     * $this->followings == $this->followings()-get()
+     *
+     * 单理解为 followings 返回的是数据集合，而 followings() 返回的是数据库查询语句。
+     *
+     * 扩展理解，基本上Laravel关于模型Eloquent都可以这样理解。知识点如下：
+     * 1 动态属性知识点；
+     * 2 动态属性返回的类型collection类型（Eloquent的集合）；
+     * 3 建立模型关联的方法返回的是一个Relations，也就是数据库请求构建器；
+     *
+     *
      */
     public function isFollowing($user_id)
     {
-        return $this->followings()->contains($user_id);
+        return $this->followings->contains($user_id);
     }
 }
+
+/**
+ * 模型建立关联的函数：hasOne()，belongsTo(), hasMany(), belongsToMany()等建立关联的函数，
+ * 会读取所有关联的数据，返回一个关联数据的数据库构建器，通过数据库操作方法对数据进行操作处理。
+ *
+ * Auth::user()->followings 的用法。我们在 User 模型里定义了关联方法 followings()，
+ * 关联关系定义好后，我们就可以通过访问 followings 属性直接获取到关注用户的 集合。
+ * 这是 Laravel Eloquent 提供的「动态属性」属性功能，我们可以像在访问模型中定义的属性一样，来访问所有的关联方法。
+ *
+ * 还有一点需要注意的是 $user->followings 与 $user->followings() 调用时返回的数据是不一样的，
+ * $user->followings 返回的是 Eloquent：集合 。而 $user->followings() 返回的是 数据库请求构建器 。
+ *
+ */
